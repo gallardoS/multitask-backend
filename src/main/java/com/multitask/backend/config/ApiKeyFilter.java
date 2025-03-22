@@ -16,21 +16,34 @@ public class ApiKeyFilter implements Filter {
     @Value("${app.api-key}")
     private String apiKey;
 
+    @Value("${frontend.url}")
+    private String frontendUrl;
+
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 
         HttpServletRequest httpReq = (HttpServletRequest) request;
-        String requestPath = httpReq.getRequestURI();
+        HttpServletResponse httpRes = (HttpServletResponse) response;
 
-        if (requestPath.equals("/scores/ping")) {
+        httpRes.setHeader("Access-Control-Allow-Origin", frontendUrl);
+        httpRes.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+        httpRes.setHeader("Access-Control-Allow-Headers", "Content-Type, X-API-KEY");
+        httpRes.setHeader("Access-Control-Max-Age", "3600");
+
+        if ("OPTIONS".equalsIgnoreCase(httpReq.getMethod())) {
+            httpRes.setStatus(HttpServletResponse.SC_OK);
+            return;
+        }
+
+        String path = httpReq.getRequestURI();
+        if ("/scores/ping".equals(path)) {
             chain.doFilter(request, response);
             return;
         }
 
         String receivedKey = httpReq.getHeader("X-API-KEY");
         if (receivedKey == null || !receivedKey.equals(apiKey)) {
-            HttpServletResponse httpRes = (HttpServletResponse) response;
             httpRes.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             httpRes.getWriter().write("Invalid or missing API key");
             return;
