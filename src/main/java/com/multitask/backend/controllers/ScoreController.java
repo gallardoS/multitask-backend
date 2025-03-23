@@ -24,10 +24,13 @@ public class ScoreController {
     }
 
     @PostMapping
-    public ResponseEntity<String> submitScore(@RequestBody ScoreDTO request) {
-        scoreService.saveScore(request);
-        log.info("save score");
-        return ResponseEntity.status(HttpStatus.CREATED).body("Score saved");
+    public ResponseEntity<ScoreDTO> submitScore(
+            @RequestBody ScoreDTO request,
+            @RequestHeader("X-Signature") String signature) {
+        log.info("[SCORE] submitScore from {}", request.getPlayerName());
+        ScoreDTO scoreSaved = scoreService.saveScore(request, signature);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(scoreSaved);
     }
 
     @GetMapping("/top10")

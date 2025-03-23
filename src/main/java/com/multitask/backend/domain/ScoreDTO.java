@@ -6,4 +6,5 @@ import lombok.Data;
 public class ScoreDTO {
     private String playerName;
     private int score;
+    private long timestamp;
 }
