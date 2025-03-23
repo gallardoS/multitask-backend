@@ -12,7 +12,7 @@ public class ScoreSignatureValidator {
 
     private final String secret;
 
-    public ScoreSignatureValidator(@Value("${SCORE_SECRET}") String secret) {
+    public ScoreSignatureValidator(@Value("${app.score-secret}") String secret) {
         this.secret = secret;
     }
 
