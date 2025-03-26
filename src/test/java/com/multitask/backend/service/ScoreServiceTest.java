@@ -8,7 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 
-import java.time.Instant;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -34,25 +34,25 @@ class ScoreServiceTest {
         ScoreDTO dto = new ScoreDTO();
         dto.setPlayerName("Juan");
         dto.setScore(100);
-        dto.setTimestamp(Instant.now().getEpochSecond());
+        LocalDateTime nowUtc = LocalDateTime.now(Clock.systemUTC());
+        dto.setDateTime(nowUtc);
 
         Score fakeSavedScore = new Score();
         fakeSavedScore.setId(1L);
         fakeSavedScore.setPlayerName("Juan");
         fakeSavedScore.setScore(100);
-        fakeSavedScore.setSubmittedAt(LocalDateTime.now());
+        fakeSavedScore.setDateTime(nowUtc);
 
         when(scoreRepository.save(any(Score.class))).thenReturn(fakeSavedScore);
-
-        when(signatureValidator.validarFirma(
-                eq("Juan"), eq(100), anyLong(), eq("valid-signature")))
+        when(signatureValidator.validarFirma(eq("Juan"), eq(100), eq(dto.getTimestamp()), eq("valid-signature")))
                 .thenReturn(true);
 
         scoreService.saveScore(dto, "valid-signature");
 
         verify(scoreRepository, times(1)).save(argThat(score ->
                 score.getPlayerName().equals("Juan") &&
-                        score.getScore() == 100
+                        score.getScore() == 100 &&
+                        score.getDateTime().equals(nowUtc)
         ));
     }
 
@@ -61,10 +61,10 @@ class ScoreServiceTest {
         ScoreDTO dto = new ScoreDTO();
         dto.setPlayerName("Juan");
         dto.setScore(100);
-        dto.setTimestamp(Instant.now().getEpochSecond());
+        LocalDateTime nowUtc = LocalDateTime.now(Clock.systemUTC());
+        dto.setDateTime(nowUtc);
 
-        when(signatureValidator.validarFirma(
-                anyString(), anyInt(), anyLong(), anyString()))
+        when(signatureValidator.validarFirma(anyString(), anyInt(), anyLong(), anyString()))
                 .thenReturn(false);
 
         assertThrows(SecurityException.class, () ->
@@ -79,7 +79,8 @@ class ScoreServiceTest {
         ScoreDTO dto = new ScoreDTO();
         dto.setPlayerName("Juan");
         dto.setScore(100);
-        dto.setTimestamp(Instant.now().minusSeconds(2 * 60 * 60).getEpochSecond()); // 2 hours
+        LocalDateTime nowUtc = LocalDateTime.now(Clock.systemUTC());
+        dto.setDateTime(nowUtc.minusHours(2));
 
         when(signatureValidator.validarFirma(anyString(), anyInt(), anyLong(), anyString()))
                 .thenReturn(true);
@@ -96,7 +97,8 @@ class ScoreServiceTest {
         ScoreDTO dto = new ScoreDTO();
         dto.setPlayerName("Juan");
         dto.setScore(100);
-        dto.setTimestamp(Instant.now().plusSeconds(2 * 60 * 60).getEpochSecond());
+        LocalDateTime nowUtc = LocalDateTime.now(Clock.systemUTC());
+        dto.setDateTime(nowUtc.plusHours(2));
 
         when(signatureValidator.validarFirma(anyString(), anyInt(), anyLong(), anyString()))
                 .thenReturn(true);
@@ -108,21 +110,21 @@ class ScoreServiceTest {
         verify(scoreRepository, never()).save(any());
     }
 
-
-
     @Test
     void getTop10Scores_shouldReturnMappedDTOs() {
+        LocalDateTime nowUtc = LocalDateTime.now(Clock.systemUTC());
+
         Score score1 = new Score();
         score1.setId(1L);
         score1.setPlayerName("Ana");
         score1.setScore(200);
-        score1.setSubmittedAt(LocalDateTime.now());
+        score1.setDateTime(nowUtc);
 
         Score score2 = new Score();
         score2.setId(2L);
         score2.setPlayerName("Luis");
         score2.setScore(180);
-        score2.setSubmittedAt(LocalDateTime.now());
+        score2.setDateTime(nowUtc);
 
         when(scoreRepository.findTop10ByOrderByScoreDesc())
                 .thenReturn(List.of(score1, score2));

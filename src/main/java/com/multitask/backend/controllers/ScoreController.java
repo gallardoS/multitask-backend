@@ -24,13 +24,13 @@ public class ScoreController {
     }
 
     @PostMapping
-    public ResponseEntity<ScoreDTO> submitScore(
+    public ResponseEntity<Void> submitScore(
             @RequestBody ScoreDTO request,
             @RequestHeader("X-Signature") String signature) {
         log.info("[SCORE] submitScore from {}", request.getPlayerName());
-        ScoreDTO scoreSaved = scoreService.saveScore(request, signature);
+        scoreService.saveScore(request, signature);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(scoreSaved);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @GetMapping("/top10")
@@ -41,6 +41,6 @@ public class ScoreController {
     @GetMapping("/ping")
     public ResponseEntity<String> ping(HttpServletRequest request) {
         log.info("Received ping from {}", request.getRemoteAddr());
-        return ResponseEntity.ok("pong");
+        return ResponseEntity.status(HttpStatus.OK).body("pong");
     }
 }

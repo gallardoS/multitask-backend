@@ -29,6 +29,7 @@ public class ScoreService {
         if (!validSignature) {
             throw new SecurityException("Invalid signature");
         }
+
         long now = Instant.now().getEpochSecond();
         if (Math.abs(now - dto.getTimestamp()) > MAX_TIMESTAMP_DRIFT_SECONDS) {
             throw new IllegalArgumentException("Invalid timestamp");

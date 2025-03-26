@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -23,6 +22,6 @@ public class Score {
     @Column(nullable = false)
     private int score;
 
-    @CreationTimestamp
-    private LocalDateTime submittedAt;
+    @Column(nullable = false)
+    private LocalDateTime dateTime;
 }
