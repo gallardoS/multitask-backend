@@ -26,6 +26,6 @@ public class SecurityConfig {
 
     @PostConstruct
     public void init() {
-        log.info(">>> SecurityConfig (prod) loaded");
+        log.info(">>> SecurityConfig (local) loaded");
     }
 }

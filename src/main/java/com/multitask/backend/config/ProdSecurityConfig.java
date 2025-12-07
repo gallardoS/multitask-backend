@@ -23,6 +23,7 @@ public class ProdSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .build();
     }
+
     @PostConstruct
     public void init() {
         log.info(">>> SecurityConfig (prod) loaded");
